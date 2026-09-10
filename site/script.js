@@ -1,6 +1,9 @@
+// THE ARENA — motion layer (GSAP + ScrollTrigger, custom cursor)
+
 document.addEventListener('DOMContentLoaded', () => {
   gsap.registerPlugin(ScrollTrigger);
 
+  /* ---------- custom cursor ---------- */
   const dot = document.getElementById('cursorDot');
   const ring = document.getElementById('cursorRing');
   let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
@@ -26,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
   });
 
+  /* ---------- hero line reveal (on load) ---------- */
   document.querySelectorAll('.hero-title .line').forEach((line, i) => {
     const text = line.textContent;
     line.innerHTML = `<span class="line-inner" style="display:inline-block; transform: translateY(110%);">${text}</span>`;
@@ -40,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   gsap.set('.eyebrow, .hero-sub, .hero-ctas', { y: 14 });
 
+  /* ---------- scroll reveals ---------- */
   const revealUp = (selector, opts = {}) => {
     document.querySelectorAll(selector).forEach((el) => {
       gsap.fromTo(
@@ -69,16 +74,49 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
+  /* ---------- hero watermark subtle parallax ---------- */
   gsap.to('.hero-watermark', {
     yPercent: 12,
     ease: 'none',
     scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
   });
 
+  /* ---------- hero grid subtle drift ---------- */
   gsap.to('.hero-grid', {
     backgroundPosition: '64px 64px',
     duration: 40,
     repeat: -1,
     ease: 'none',
   });
+
+  /* ---------- hero slider ---------- */
+  const slides = Array.from(document.querySelectorAll('.hero-slide'));
+  const dots = Array.from(document.querySelectorAll('.hero-dot'));
+  if (slides.length > 1) {
+    let activeIndex = slides.findIndex((s) => s.classList.contains('is-active'));
+    if (activeIndex < 0) activeIndex = 0;
+    let autoplay;
+
+    function goTo(index) {
+      slides[activeIndex].classList.remove('is-active');
+      dots[activeIndex] && dots[activeIndex].classList.remove('is-active');
+      activeIndex = (index + slides.length) % slides.length;
+      slides[activeIndex].classList.add('is-active');
+      dots[activeIndex] && dots[activeIndex].classList.add('is-active');
+    }
+
+    function startAutoplay() {
+      autoplay = setInterval(() => goTo(activeIndex + 1), 7000);
+    }
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        clearInterval(autoplay);
+        goTo(i);
+        startAutoplay();
+      });
+    });
+
+    startAutoplay();
+  }
 });
